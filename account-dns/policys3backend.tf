@@ -1,5 +1,4 @@
 data "aws_s3_bucket" "stateterra" {
-  bucket = var.buckettoprod == true ? "payana-dev-terraform-state" : format("payana-%s-terraform-state", var.stage) // el bucket en prod varia la nomenclatura
 }
 
 resource "aws_s3_bucket_policy" "addsecpolicy" {
