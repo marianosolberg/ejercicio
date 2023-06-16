@@ -1,0 +1,56 @@
+- hosts: all
+  become: True
+  become_method: sudo
+  gather_facts: False
+  check_mode: no
+
+  vars:
+    # Variables específicas de WordPress, como la versión, la URL de descarga, etc.
+    wordpress_version: "5.7.2"
+    wordpress_download_url: "https://wordpress.org/wordpress-{{ wordpress_version }}.tar.gz"
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - apache2
+          - mysql-server
+          - php
+          - php-mysql
+          - postgresql
+          - unzip
+        state: present
+
+    - name: Download and extract WordPress
+      unarchive:
+        src: "{{ wordpress_download_url }}"
+        dest: "/var/www/html/"
+        remote_src: yes
+        creates: "/var/www/html/wordpress"
+
+    - name: Add /health location to apache2.conf
+      ansible.builtin.blockinfile:
+        path: /etc/apache2/apache2.conf
+        marker: "# {mark} ANSIBLE MANAGED BLOCK -- DO NOT EDIT"
+        block: |
+          <Location /health>
+            SetHandler server-status
+            Order allow,deny
+            Allow from all
+          </Location>
+      notify:
+        - Restart Apache service
+
+  handlers:
+    - name: Restart Apache service
+      ansible.builtin.service:
+        name: apache2
+        state: restarted
+
+
+    # Configura y personaliza la instalación de WordPress según tus necesidades
+
+    - name: Restart Apache service
+      service:
+        name: apache2
+        state: restarted
